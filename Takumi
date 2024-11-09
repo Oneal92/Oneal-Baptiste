@@ -1,0 +1,145 @@
+package com.mycompany.takumi;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Scanner;
+
+public class Takumi {
+    // Attributes for the deck of cards, player, computer, and input scanner
+    private List<Cards> deck;
+    private Player player;
+    private Player computer;
+    private Scanner scanner;
+
+    // Constructor initializes the game by setting up the deck, players, and scanner
+    public Takumi() {
+        deck = new ArrayList<>();
+        player = new Player("Player");
+        computer = new Player("Computer");
+        scanner = new Scanner(System.in);
+        initializeDeck();   // Add all cards to the deck
+        shuffleDeck();      // Shuffle the deck to randomize card order
+        dealCards();        // Deal 4 cards to each player
+    }
+
+    // Adds each card to the deck with its name, attack power, and defense
+    private void initializeDeck() {
+        deck.add(new Cards("Angel of Light", 8, 5));
+        deck.add(new Cards("Dr.Stellar", 5, 8));
+        deck.add(new Cards("Frost Dragon", 7, 7));
+        deck.add(new Cards("AI J9213", 6, 6));
+        deck.add(new Cards("Mystic Warrior", 9, 4));
+        deck.add(new Cards("Onryo", 10, 3));
+        deck.add(new Cards("Queen Sorceress", 7, 9));
+        deck.add(new Cards("Satori", 6, 8));
+        deck.add(new Cards("Sinister G", 5, 7));
+        deck.add(new Cards("Vamp", 8, 6));
+        deck.add(new Cards("Snake Beast", 4, 10));
+        deck.add(new Cards("Void of Despair", 10, 10));
+    }
+
+    // Randomly shuffles the deck to prepare for the game
+    private void shuffleDeck() {
+        Collections.shuffle(deck);
+    }
+
+    // Deals the first 4 cards from the deck to each player
+    private void dealCards() {
+        for (int i = 0; i < 4; i++) {
+            player.addCard(deck.remove(0));
+            computer.addCard(deck.remove(0));
+        }
+    }
+
+    // Prompts the player to choose a card to play by entering a number
+    private int getUserCardChoice(int handSize) {
+        System.out.print("Choose a card to attack with (1-" + handSize + "): ");
+        try {
+            int choice = Integer.parseInt(scanner.nextLine());
+            // Ensures the chosen card number is valid
+            if (choice < 1 || choice > handSize) {
+                System.out.println("Invalid choice. Please try again.");
+                return getUserCardChoice(handSize);
+            }
+            return choice - 1; // Convert to zero-based index
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter a number.");
+            return getUserCardChoice(handSize);
+        }
+    }
+
+    // Main game loop that plays 4 rounds and keeps track of scores
+    public void start() {
+        int playerScore = 0;        // Player's total score across rounds
+        int computerScore = 0;      // Computer's total score across rounds
+        int rounds = 4;             // Total number of rounds to play
+
+        System.out.println("Welcome to Takumi Card Battle Game!");
+
+        // Loop for each round
+        for (int round = 1; round <= rounds; round++) {
+            System.out.println("Round " + round);
+            player.displayHand();       // Show player's current hand
+
+            // Player selects a card to play
+            int playerChoice = getUserCardChoice(player.getHand().size());
+            Cards playerCard = player.getHand().get(playerChoice);
+            player.removeCard(playerCard);
+            System.out.println();
+            System.out.println("You played: " + playerCard);
+
+            // Computer selects a card randomly
+            int computerChoice = (int) (Math.random() * computer.getHand().size());
+            Cards computerCard = computer.getHand().get(computerChoice);
+            computer.removeCard(computerCard);
+            System.out.println();
+            System.out.println("Computer played: " + computerCard);
+
+            // Compare the attack and defense of both cards to determine round winner
+            if (playerCard.getAttackPower() > computerCard.getDefense()) {
+                System.out.println();
+                System.out.println("You win this round!");
+                System.out.println();
+                playerScore++; // Increment player score
+            } else if (computerCard.getAttackPower() > playerCard.getDefense()) {
+                System.out.println();
+                System.out.println("Computer wins this round!");
+                System.out.println();
+                computerScore++; // Increment computer score
+            } else if (computerCard.getDefense() > playerCard.getAttackPower()){
+                System.out.println();
+                System.out.println("The computer stopped you with their defense and won this round!");
+                System.out.println();
+                computerScore++;
+            } else if (playerCard.getAttackPower() > computerCard.getDefense()){
+                System.out.println();
+                System.out.println("You've stopped their attack!");
+                System.out.println();
+                playerScore++;
+            } else {
+                System.out.println();
+                System.out.println("Both Cards Are Evenly Matched");
+                System.out.println();
+            }
+
+            System.out.println("-----------------------------------");
+        }
+
+        // Display final scores and determine the game winner
+        System.out.println("Final Scores: Player - " + playerScore + ", Computer - " + computerScore);
+        if (playerScore > computerScore) {
+            System.out.println();
+            System.out.println("Congratulations! You win the game!");
+        } else if (computerScore > playerScore) {
+            System.out.println();
+            System.out.println("Computer wins the game!");
+        } else {
+            System.out.println();
+            System.out.println("The game is a tie!");
+        }
+        
+        // Close the scanner resource
+        scanner.close();
+    }
+}
